@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import auth, health
+from app.api.v1.endpoints import auth, bookings, health, packages
 
 api_router = APIRouter()
 
@@ -9,7 +9,8 @@ api_router.include_router(health.router, tags=["Health & System"])
 # Authentication & RBAC
 api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 
-# Future Business Modules (to be added in subsequent phases):
-# api_router.include_router(bookings.router, prefix="/bookings", tags=["Bookings"])
-# api_router.include_router(creators.router, prefix="/creators", tags=["Creators"])
-# api_router.include_router(reels.router, prefix="/reels", tags=["Reels"])
+# Packages & Pricing
+api_router.include_router(packages.router, prefix="/packages", tags=["Packages"])
+
+# Customer & Reel Bookings
+api_router.include_router(bookings.router, prefix="/bookings", tags=["Bookings"])
