@@ -239,7 +239,7 @@ class BookingFlowController extends StateNotifier<BookingFlowState> {
         city: state.selectedCity,
         locationAddress: state.locationAddress,
         scheduledAt: scheduledAt,
-        customer_whatsapp: state.customerWhatsapp,
+        customerWhatsapp: state.customerWhatsapp,
         notes: state.notes,
       );
 

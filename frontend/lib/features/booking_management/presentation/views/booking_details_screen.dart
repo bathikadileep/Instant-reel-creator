@@ -120,17 +120,15 @@ class BookingDetailsScreen extends ConsumerWidget {
     UserModel? currentUser, {
     required bool isMobile,
   }) {
-    final isCancelled = booking.status.toLowerCase() == 'cancelled';
-    final isDelivered = booking.status.toLowerCase() == 'delivered' ||
-        booking.status.toLowerCase() == 'completed' ||
-        booking.status.toLowerCase() == 'delivered_on_whatsapp' ||
+    final isCancelled = booking.status == BookingStatus.cancelled;
+    final isDelivered = booking.status == BookingStatus.deliveredOnWhatsapp ||
+        booking.status == BookingStatus.completed ||
         booking.deliveryStatus == 'delivered';
 
     final canCancel = !isCancelled &&
         !isDelivered &&
-        (booking.status.toLowerCase() == 'pending' ||
-            booking.status.toLowerCase() == 'assigned' ||
-            booking.status.toLowerCase() == 'creator_assigned' ||
+        (booking.status == BookingStatus.pending ||
+            booking.status == BookingStatus.creatorAssigned ||
             currentUser?.role == UserRole.admin);
 
     return ListView(
@@ -215,7 +213,7 @@ class BookingDetailsScreen extends ConsumerWidget {
                       ),
                     ),
                     child: Text(
-                      booking.status.replaceAll('_', ' ').toUpperCase(),
+                      booking.status.displayName.toUpperCase(),
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.bold,

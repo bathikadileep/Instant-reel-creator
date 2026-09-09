@@ -23,9 +23,20 @@ enum CreatorWorkflowStatus {
 
   const CreatorWorkflowStatus(this.value, this.title, this.description, this.icon, this.color);
 
-  static CreatorWorkflowStatus fromString(String? val) {
+  static CreatorWorkflowStatus fromString(dynamic val) {
     if (val == null) return CreatorWorkflowStatus.pending;
-    final normalized = val.toLowerCase().trim();
+    if (val is CreatorWorkflowStatus) return val;
+    final String str;
+    if (val is String) {
+      str = val;
+    } else {
+      try {
+        str = (val as dynamic).toApiString();
+      } catch (_) {
+        str = val.toString();
+      }
+    }
+    final normalized = str.toLowerCase().trim();
     switch (normalized) {
       case 'assigned':
       case 'creator_assigned':

@@ -112,7 +112,7 @@ class CreatorBookingWorkflowView extends ConsumerWidget {
     CreatorWorkflowController controller, {
     required bool isMobile,
   }) {
-    final workflow = CreatorWorkflowStatus.fromString(booking.status);
+    final workflow = CreatorWorkflowStatus.fromString(booking.status.toApiString());
     final currentStep = workflow.stepIndex;
 
     return ListView(
@@ -614,7 +614,7 @@ class CreatorBookingWorkflowView extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 ...booking.statusHistory.map((h) {
-                  final histWorkflow = CreatorWorkflowStatus.fromString(h.status);
+                  final histWorkflow = CreatorWorkflowStatus.fromString(h.status.toApiString());
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 12.0),
                     child: Row(

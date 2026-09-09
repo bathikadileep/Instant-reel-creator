@@ -164,6 +164,8 @@ class BookingStatusHistoryModel extends Equatable {
 
   @override
   List<Object?> get props => [id, status, note, createdAt];
+
+  String get formattedTime => DateFormat('hh:mm a, dd MMM').format(createdAt);
 }
 
 class BookingModel extends Equatable {

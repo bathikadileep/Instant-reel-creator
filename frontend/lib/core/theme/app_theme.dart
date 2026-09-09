@@ -29,7 +29,7 @@ class AppTheme {
           fontWeight: FontWeight.bold,
         ),
       ),
-      cardTheme: const CardTheme(
+      cardTheme: const CardThemeData(
         color: AppColors.surfaceDark,
         elevation: 0,
         shape: RoundedRectangleBorder(
@@ -93,7 +93,7 @@ class AppTheme {
         onSecondary: Colors.white,
         onSurface: AppColors.textPrimaryLight,
       ),
-      cardTheme: const CardTheme(
+      cardTheme: const CardThemeData(
         color: AppColors.surfaceLight,
         elevation: 1,
         shape: RoundedRectangleBorder(

@@ -102,7 +102,7 @@ class CreatorWorkflowController extends StateNotifier<CreatorWorkflowState> {
     final current = state.booking.valueOrNull;
     if (current == null) return false;
 
-    final currentWorkflow = CreatorWorkflowStatus.fromString(current.status);
+    final currentWorkflow = CreatorWorkflowStatus.fromString(current.status.toApiString());
     final nextWorkflow = currentWorkflow.nextStatus;
     if (nextWorkflow == null) return false;
 

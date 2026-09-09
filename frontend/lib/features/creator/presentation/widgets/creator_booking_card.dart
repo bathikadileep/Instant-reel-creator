@@ -28,7 +28,7 @@ class CreatorBookingCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final workflow = CreatorWorkflowStatus.fromString(booking.status);
+    final workflow = CreatorWorkflowStatus.fromString(booking.status.toApiString());
     final isPending = workflow == CreatorWorkflowStatus.pending;
     final isDelivered = workflow == CreatorWorkflowStatus.delivered || workflow == CreatorWorkflowStatus.completed;
 

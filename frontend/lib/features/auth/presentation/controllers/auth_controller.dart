@@ -70,6 +70,10 @@ final authControllerProvider =
   return AuthController(repository: repository);
 });
 
+final currentUserProvider = Provider<UserModel?>((ref) {
+  return ref.watch(authControllerProvider).user;
+});
+
 class AuthController extends StateNotifier<AuthState> {
   final AuthRepository _repository;
 

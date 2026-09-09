@@ -12,9 +12,15 @@ final apiClientProvider = Provider<ApiClient>((ref) {
   return ApiClient(authInterceptor: authInterceptor);
 });
 
+final dioProvider = Provider<Dio>((ref) {
+  return ref.watch(apiClientProvider).dio;
+});
+
 class ApiClient {
   final Dio _dio;
   final AuthInterceptor _authInterceptor;
+
+  Dio get dio => _dio;
 
   ApiClient({
     required AuthInterceptor authInterceptor,
