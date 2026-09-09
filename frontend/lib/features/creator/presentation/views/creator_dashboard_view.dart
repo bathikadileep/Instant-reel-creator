@@ -8,6 +8,7 @@ import 'package:instant_reel/features/auth/presentation/controllers/auth_control
 import 'package:instant_reel/features/creator/presentation/controllers/creator_dashboard_controller.dart';
 import 'package:instant_reel/features/creator/presentation/widgets/creator_booking_card.dart';
 import 'package:instant_reel/features/creator/presentation/widgets/creator_metric_card.dart';
+import 'package:instant_reel/features/notifications/presentation/widgets/notification_bell_widget.dart';
 
 class CreatorDashboardView extends ConsumerWidget {
   const CreatorDashboardView({super.key});
@@ -89,6 +90,8 @@ class CreatorDashboardView extends ConsumerWidget {
             loading: () => const SizedBox.shrink(),
             error: (_, __) => const SizedBox.shrink(),
           ),
+
+          const NotificationBellWidget(),
 
           IconButton(
             icon: const Icon(Icons.logout_rounded, color: AppColors.error, size: 20),

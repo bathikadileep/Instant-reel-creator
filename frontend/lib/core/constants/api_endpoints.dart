@@ -24,6 +24,15 @@ class ApiEndpoints {
   static const String paymentSummary = '/payments/admin/summary';
   static const String allPayments = '/payments/admin/all';
 
+  // Notifications & FCM Endpoints
+  static const String notifications = '/notifications';
+  static const String notificationDevices = '/notifications/devices';
+  static const String notificationUnreadCount = '/notifications/unread-count';
+  static const String notificationReadAll = '/notifications/read-all';
+  static String notificationMarkRead(String id) => '/notifications/$id/read';
+  static String notificationDeleteDevice(String token) => '/notifications/devices/$token';
+  static const String notificationTest = '/notifications/test';
+
   // Timeouts
   static const Duration connectTimeout = Duration(seconds: 15);
   static const Duration receiveTimeout = Duration(seconds: 15);

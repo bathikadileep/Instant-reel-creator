@@ -8,6 +8,7 @@ import 'package:instant_reel/core/utils/responsive_layout.dart';
 import 'package:instant_reel/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:instant_reel/features/customer/presentation/controllers/customer_dashboard_controller.dart';
 import 'package:instant_reel/features/customer/presentation/widgets/booking_card.dart';
+import 'package:instant_reel/features/notifications/presentation/widgets/notification_bell_widget.dart';
 
 class CustomerDashboardView extends ConsumerWidget {
   const CustomerDashboardView({Key? key}) : super(key: key);
@@ -120,10 +121,16 @@ class CustomerDashboardView extends ConsumerWidget {
                   ),
                 ],
               ),
-              IconButton(
-                icon: const Icon(Icons.refresh_rounded, color: Colors.white70),
-                onPressed: () =>
-                    ref.read(customerDashboardControllerProvider.notifier).refreshData(),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const NotificationBellWidget(),
+                  IconButton(
+                    icon: const Icon(Icons.refresh_rounded, color: Colors.white70),
+                    onPressed: () =>
+                        ref.read(customerDashboardControllerProvider.notifier).refreshData(),
+                  ),
+                ],
               ),
             ],
           ),
