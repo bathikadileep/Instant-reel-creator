@@ -33,13 +33,30 @@ jobs:
       - name: Verify Flutter & Android Setup
         run: flutter doctor -v
 
+      - name: Accept Android Licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
       - name: Get Dependencies
         working-directory: ./frontend
         run: flutter pub get
 
+      - name: Flutter Code Quality Check
+        working-directory: ./frontend
+        run: flutter analyze --no-fatal-infos || true
+
       - name: Build Standalone Release APK
         working-directory: ./frontend
-        run: flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
+        run: |
+          set -o pipefail
+          flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation 2>&1 | tee ../build_output.log
+
+      - name: Output Build Log on Failure
+        if: failure()
+        run: |
+          echo "### Flutter Build Output (Tail)" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          tail -n 120 build_output.log >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
       - name: Rename APK for Easy Identification
         run: |
@@ -53,3 +70,10 @@ jobs:
           name: instant-reel-apk
           path: output/instant-reel-v1.0.0.apk
           retention-days: 30
+
+      - name: Upload Failure Log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: flutter-build-failure-log
+          path: build_output.log
