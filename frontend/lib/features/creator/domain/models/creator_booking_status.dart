@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:instant_reel/core/theme/app_colors.dart';
+import 'package:instant_reel/features/customer/domain/models/booking_model.dart';
 
 enum CreatorWorkflowStatus {
   assigned('assigned', 'Assigned', 'Booking assigned to you', Icons.assignment_turned_in_rounded, AppColors.primary),
@@ -26,16 +27,9 @@ enum CreatorWorkflowStatus {
   static CreatorWorkflowStatus fromString(dynamic val) {
     if (val == null) return CreatorWorkflowStatus.pending;
     if (val is CreatorWorkflowStatus) return val;
-    String str;
-    if (val is String) {
-      str = val;
-    } else {
-      try {
-        str = (val as dynamic).toApiString();
-      } catch (_) {
-        str = val.toString();
-      }
-    }
+    final String str = (val is String)
+        ? val
+        : (val is BookingStatus ? val.toApiString() : val.toString());
     final normalized = str.toLowerCase().trim();
     switch (normalized) {
       case 'assigned':
