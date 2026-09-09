@@ -35,9 +35,11 @@ class _DeliverReelDialogState extends State<DeliverReelDialog> {
 
   Future<void> _openWhatsApp() async {
     final cleanPhone = widget.customerWhatsapp.replaceAll(RegExp(r'[^0-9]'), '');
-    final message = Uri.encodeComponent(
-      'Hi ${widget.customerName}! Your Instant Reel for booking ${widget.bookingCode} has been edited and delivered! Here is your download link: ${_urlController.text.trim()}',
-    );
+    final customUrl = _urlController.text.trim();
+    final messageText = customUrl.isNotEmpty
+        ? 'Hi ${widget.customerName}! Your Instant Reel for booking ${widget.bookingCode} is ready! Reel link: $customUrl'
+        : 'Hi ${widget.customerName}! Your Instant Reel for booking ${widget.bookingCode} has been shot & edited on-site. Here is your 4K video reel!';
+    final message = Uri.encodeComponent(messageText);
     final url = Uri.parse('https://wa.me/$cleanPhone?text=$message');
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);
@@ -45,19 +47,12 @@ class _DeliverReelDialogState extends State<DeliverReelDialog> {
   }
 
   Future<void> _handleSubmit() async {
-    final url = _urlController.text.trim();
-    if (url.isEmpty) {
-      setState(() {
-        _error = 'Please enter the download / reel link';
-      });
-      return;
-    }
-
     setState(() {
       _isSubmitting = true;
       _error = null;
     });
 
+    final url = _urlController.text.trim();
     final success = await widget.onDeliver(url, _noteController.text.trim());
     if (mounted) {
       if (success) {
@@ -171,8 +166,13 @@ class _DeliverReelDialogState extends State<DeliverReelDialog> {
 
             // Reel URL input
             const Text(
-              'Reel Video Link / Drive URL *',
+              'Optional Video Link / Drive URL',
               style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.white),
+            ),
+            const SizedBox(height: 4),
+            const Text(
+              'No link needed if shared directly from gallery via WhatsApp.',
+              style: TextStyle(fontSize: 11, color: AppColors.textSecondaryDark),
             ),
             const SizedBox(height: 8),
             TextField(
@@ -180,7 +180,7 @@ class _DeliverReelDialogState extends State<DeliverReelDialog> {
               keyboardType: TextInputType.url,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'https://drive.google.com/... or https://wa.me/...',
+                hintText: 'Optional (e.g. Google Drive link or leave empty)',
                 hintStyle: const TextStyle(color: AppColors.textSecondaryDark, fontSize: 13),
                 prefixIcon: const Icon(Icons.link_rounded, color: AppColors.primary),
                 filled: true,

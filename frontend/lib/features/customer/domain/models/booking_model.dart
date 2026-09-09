@@ -180,6 +180,7 @@ class BookingModel extends Equatable {
   final String? notes;
   final String? reelUrl;
   final DateTime? deliveredAt;
+  final String deliveryStatus;
   final DateTime createdAt;
   final PackageModel? package;
   final Map<String, dynamic>? creator;
@@ -208,6 +209,7 @@ class BookingModel extends Equatable {
     this.notes,
     this.reelUrl,
     this.deliveredAt,
+    this.deliveryStatus = 'pending',
     required this.createdAt,
     this.package,
     this.creator,
@@ -225,6 +227,22 @@ class BookingModel extends Equatable {
   String get packageName => package?.name ?? '10-Minute Rapid Reel';
   double get price => totalAmount ?? package?.price ?? 499.0;
   String get formattedSchedule => DateFormat('EEE, d MMM yyyy • h:mm a').format(scheduledAt);
+
+  // Delivery status helpers
+  bool get isDelivered =>
+      status == BookingStatus.deliveredOnWhatsapp ||
+      status == BookingStatus.completed ||
+      deliveryStatus == 'delivered';
+  bool get isSharedOnWhatsapp => deliveryStatus == 'shared_on_whatsapp';
+  bool get isPendingDelivery => deliveryStatus == 'pending';
+  String get formattedDeliveredAt =>
+      deliveredAt != null ? DateFormat('EEE, d MMM yyyy • h:mm a').format(deliveredAt!.toLocal()) : '';
+
+  // Helpers for creator and customer
+  String? get creatorName => creator?['name'] as String?;
+  String? get creatorWhatsapp => creator?['mobile'] as String?;
+  String? get creatorCameraGear => creator?['profile']?['camera_gear'] as String?;
+  String? get customerName => customerWhatsapp.isNotEmpty ? 'Customer ($customerWhatsapp)' : 'Customer';
 
   // Payment status helpers
   bool get isCod => paymentMethod == 'cod_with_advance';
@@ -253,6 +271,7 @@ class BookingModel extends Equatable {
       deliveredAt: json['delivered_at'] != null
           ? DateTime.parse(json['delivered_at'] as String)
           : null,
+      deliveryStatus: json['delivery_status'] as String? ?? 'pending',
       createdAt: json['created_at'] != null
           ? DateTime.parse(json['created_at'] as String)
           : DateTime.now(),
@@ -298,6 +317,7 @@ class BookingModel extends Equatable {
         notes,
         reelUrl,
         deliveredAt,
+        deliveryStatus,
         createdAt,
         package,
         creator,

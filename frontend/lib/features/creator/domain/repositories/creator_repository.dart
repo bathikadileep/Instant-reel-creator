@@ -25,5 +25,9 @@ abstract class CreatorRepository {
     String? note,
   });
 
+  Future<Map<String, dynamic>> sendReel(String bookingId);
+
+  Future<BookingModel> markDelivered(String bookingId, {String? note});
+
   Future<bool> toggleAvailability(bool isAvailable);
 }
