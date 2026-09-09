@@ -72,7 +72,7 @@ class User(TimeStampedUUIDBase):
         nullable=True,
     )
     role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole, name="user_role", create_type=False),
+        Enum(UserRole, name="user_role", create_type=False, values_callable=lambda x: [e.value for e in x]),
         default=UserRole.CUSTOMER,
         nullable=False,
         index=True,
@@ -294,7 +294,7 @@ class Booking(TimeStampedUUIDBase):
         nullable=False,
     )
     status: Mapped[BookingStatus] = mapped_column(
-        Enum(BookingStatus, name="booking_status", create_type=False),
+        Enum(BookingStatus, name="booking_status", create_type=False, values_callable=lambda x: [e.value for e in x]),
         default=BookingStatus.PENDING,
         index=True,
         nullable=False,
@@ -384,7 +384,7 @@ class BookingStatusHistory(TimeStampedUUIDBase):
         nullable=False,
     )
     status: Mapped[BookingStatus] = mapped_column(
-        Enum(BookingStatus, name="booking_status", create_type=False),
+        Enum(BookingStatus, name="booking_status", create_type=False, values_callable=lambda x: [e.value for e in x]),
         nullable=False,
     )
     note: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -426,7 +426,7 @@ class Payment(TimeStampedUUIDBase):
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     currency: Mapped[str] = mapped_column(String(3), default="INR", nullable=False)
     status: Mapped[PaymentStatus] = mapped_column(
-        Enum(PaymentStatus, name="payment_status", create_type=False),
+        Enum(PaymentStatus, name="payment_status", create_type=False, values_callable=lambda x: [e.value for e in x]),
         default=PaymentStatus.PENDING,
         index=True,
         nullable=False,
