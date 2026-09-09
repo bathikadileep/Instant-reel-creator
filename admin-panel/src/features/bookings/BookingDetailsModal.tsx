@@ -7,6 +7,7 @@ import {
   UserCheck,
   AlertTriangle,
   ExternalLink,
+  CheckCircle2,
 } from 'lucide-react';
 import { adminApi } from '../../api/endpoints';
 import { Modal } from '../../components/ui/Modal';
@@ -158,17 +159,29 @@ export const BookingDetailsModal: React.FC<BookingDetailsModalProps> = ({
                 10-Minute Rapid On-Site Edit Guaranteed
               </p>
             </div>
-            {booking.reel_url ? (
-              <a
-                href={booking.reel_url}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 text-xs font-medium hover:bg-emerald-600/30 transition-colors"
-              >
-                <Video className="w-4 h-4" />
-                <span>View Delivered Reel</span>
-                <ExternalLink className="w-3 h-3 ml-0.5" />
-              </a>
+            {booking.status === 'delivered' || (booking as any).delivery_status === 'delivered' ? (
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600/20 text-emerald-300 border border-emerald-500/30 text-xs font-medium">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Delivered via WhatsApp</span>
+                </span>
+                {booking.reel_url && (
+                  <a
+                    href={booking.reel_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-600/20 text-blue-300 border border-blue-500/30 text-xs font-medium hover:bg-blue-600/30 transition-colors"
+                  >
+                    <Video className="w-3.5 h-3.5" />
+                    <span>Link</span>
+                    <ExternalLink className="w-3 h-3 ml-0.5" />
+                  </a>
+                )}
+              </div>
+            ) : (booking as any).delivery_status === 'shared_on_whatsapp' ? (
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-600/20 text-blue-300 border border-blue-500/30 text-xs font-medium">
+                <span>Shared in WhatsApp Chat</span>
+              </span>
             ) : (
               <span className="text-xs text-gray-500 italic">Reel not yet delivered</span>
             )}

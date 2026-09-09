@@ -69,6 +69,16 @@ class CreatorRepositoryImpl implements CreatorRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> sendReel(String bookingId) {
+    return _remoteDataSource.sendReel(bookingId);
+  }
+
+  @override
+  Future<BookingModel> markDelivered(String bookingId, {String? note}) {
+    return _remoteDataSource.markDelivered(bookingId, note: note);
+  }
+
+  @override
   Future<bool> toggleAvailability(bool isAvailable) {
     return _remoteDataSource.toggleAvailability(isAvailable);
   }

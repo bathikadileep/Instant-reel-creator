@@ -31,7 +31,21 @@ class RejectBookingRequest(BaseModel):
 
 
 class DeliverBookingRequest(BaseModel):
-    reel_url: str = Field(..., max_length=500, description="Cloud / WhatsApp link to the exported reel")
+    reel_url: Optional[str] = Field(None, max_length=500, description="Optional link to reel (not required for direct WhatsApp sharing)")
+    note: Optional[str] = Field("Reel delivered directly to customer via WhatsApp", max_length=500)
+
+
+class SendReelResponse(BaseModel):
+    booking_id: uuid.UUID
+    booking_code: str
+    customer_name: Optional[str] = None
+    customer_whatsapp: str
+    whatsapp_url: str
+    prefilled_message: str
+    delivery_status: str
+
+
+class MarkDeliveredRequest(BaseModel):
     note: Optional[str] = Field("Reel delivered directly to customer via WhatsApp", max_length=500)
 
 

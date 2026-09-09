@@ -26,6 +26,8 @@ abstract class CreatorRemoteDataSource {
     required String reelUrl,
     String? note,
   });
+  Future<Map<String, dynamic>> sendReel(String bookingId);
+  Future<BookingModel> markDelivered(String bookingId, {String? note});
   Future<bool> toggleAvailability(bool isAvailable);
 }
 
@@ -101,6 +103,21 @@ class CreatorRemoteDataSourceImpl implements CreatorRemoteDataSource {
         'reel_url': reelUrl,
         'note': note ?? 'Reel delivered directly to customer via WhatsApp',
       },
+    );
+    return BookingModel.fromJson(response.data as Map<String, dynamic>);
+  }
+
+  @override
+  Future<Map<String, dynamic>> sendReel(String bookingId) async {
+    final response = await _dio.post('/api/v1/creator/bookings/$bookingId/send-reel');
+    return response.data as Map<String, dynamic>;
+  }
+
+  @override
+  Future<BookingModel> markDelivered(String bookingId, {String? note}) async {
+    final response = await _dio.post(
+      '/api/v1/creator/bookings/$bookingId/mark-delivered',
+      data: note != null ? {'note': note} : {},
     );
     return BookingModel.fromJson(response.data as Map<String, dynamic>);
   }

@@ -123,7 +123,8 @@ class BookingDetailsScreen extends ConsumerWidget {
     final isCancelled = booking.status.toLowerCase() == 'cancelled';
     final isDelivered = booking.status.toLowerCase() == 'delivered' ||
         booking.status.toLowerCase() == 'completed' ||
-        booking.status.toLowerCase() == 'delivered_on_whatsapp';
+        booking.status.toLowerCase() == 'delivered_on_whatsapp' ||
+        booking.deliveryStatus == 'delivered';
 
     final canCancel = !isCancelled &&
         !isDelivered &&
@@ -471,52 +472,61 @@ class BookingDetailsScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
 
-        // Delivered Reel Link (if completed)
-        if (isDelivered && booking.reelUrl != null) ...[
+        // Delivered Reel to WhatsApp Card
+        if (isDelivered) ...[
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [AppColors.success.withOpacity(0.18), AppColors.surfaceDark],
+                colors: [const Color(0xFF25D366).withOpacity(0.18), AppColors.surfaceDark],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppColors.success.withOpacity(0.5)),
+              border: Border.all(color: const Color(0xFF25D366).withOpacity(0.5)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Row(
+                Row(
                   children: [
-                    Icon(Icons.verified_rounded, color: AppColors.success, size: 24),
-                    SizedBox(width: 10),
-                    Text(
-                      'Reel Delivered to WhatsApp',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                    const Icon(Icons.verified_rounded, color: Color(0xFF25D366), size: 24),
+                    const SizedBox(width: 10),
+                    const Expanded(
+                      child: Text(
+                        'Reel Delivered on WhatsApp',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
                     ),
+                    if (booking.deliveredAt != null)
+                      Text(
+                        booking.formattedDeliveredAt,
+                        style: const TextStyle(fontSize: 11, color: Color(0xFF25D366), fontWeight: FontWeight.w600),
+                      ),
                   ],
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  'Your 4K edited reel has been shared with you directly on WhatsApp. You can also view or download it below.',
-                  style: TextStyle(fontSize: 12, color: AppColors.textSecondaryDark, height: 1.4),
+                Text(
+                  'Your 4K edited reel has been shared directly with your WhatsApp number (${booking.customerWhatsapp}) by your creator.',
+                  style: const TextStyle(fontSize: 12, color: AppColors.textSecondaryDark, height: 1.4),
                 ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton.icon(
-                    onPressed: () => _launchUrl(booking.reelUrl!),
-                    icon: const Icon(Icons.play_circle_fill_rounded, size: 20),
-                    label: const Text('Open / Download Reel Video', style: TextStyle(fontWeight: FontWeight.bold)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.success,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                if (booking.reelUrl != null && booking.reelUrl!.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton.icon(
+                      onPressed: () => _launchUrl(booking.reelUrl!),
+                      icon: const Icon(Icons.play_circle_fill_rounded, size: 20),
+                      label: const Text('Open / Download Reel Video', style: TextStyle(fontWeight: FontWeight.bold)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF25D366),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ],
             ),
           ),

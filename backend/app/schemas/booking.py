@@ -112,6 +112,7 @@ class BookingResponse(BaseModel):
     notes: Optional[str] = None
     reel_url: Optional[str] = None
     delivered_at: Optional[datetime] = None
+    delivery_status: Optional[str] = "pending"
     created_at: datetime
     package: Optional[PackageResponse] = None
     creator: Optional[CreatorBasicResponse] = None

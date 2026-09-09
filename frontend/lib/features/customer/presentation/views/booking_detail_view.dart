@@ -144,7 +144,42 @@ class BookingDetailView extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
+
+          // WhatsApp Delivery Alert Banner
+          if (booking.isDelivered) ...[
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF25D366).withOpacity(0.15),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: const Color(0xFF25D366).withOpacity(0.4)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.check_circle_rounded, color: Color(0xFF25D366), size: 24),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Reel Delivered on WhatsApp!',
+                          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 14),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Your 4K edited reel was sent to ${booking.customerWhatsapp}${booking.deliveredAt != null ? ' at ${booking.formattedDeliveredAt}' : ''}.',
+                          style: const TextStyle(color: AppColors.textSecondaryDark, fontSize: 12),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+          ],
 
           // Live 6-Stage Progress Tracker
           Text(

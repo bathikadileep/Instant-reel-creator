@@ -58,13 +58,14 @@ class CreatorRepository(BaseRepository[CreatorProfile]):
         await self.db.refresh(creator)
         return creator
 
-    async def increment_reels_delivered(self, creator_id: uuid.UUID) -> None:
+    async def increment_reels_delivered(self, user_or_profile_id: uuid.UUID) -> None:
         await self.db.execute(
             update(CreatorProfile)
-            .where(CreatorProfile.id == creator_id)
+            .where(
+                (CreatorProfile.user_id == user_or_profile_id) | (CreatorProfile.id == user_or_profile_id)
+            )
             .values(total_reels_delivered=CreatorProfile.total_reels_delivered + 1)
         )
-        await self.db.commit()
 
     async def recalculate_rating(self, creator_user_id: uuid.UUID) -> Decimal:
         """Compute new average rating from all reviews received."""

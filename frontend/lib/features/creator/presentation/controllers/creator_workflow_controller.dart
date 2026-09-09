@@ -151,4 +151,43 @@ class CreatorWorkflowController extends StateNotifier<CreatorWorkflowState> {
       return false;
     }
   }
+
+  Future<Map<String, dynamic>?> sendReelOnWhatsApp() async {
+    state = state.copyWith(isActionLoading: true, error: null);
+    try {
+      final res = await _repository.sendReel(_bookingId);
+      final refreshed = await _repository.getBookingDetail(_bookingId);
+      state = state.copyWith(
+        booking: AsyncValue.data(refreshed),
+        isActionLoading: false,
+        successMessage: 'Opening WhatsApp chat to send 4K reel...',
+      );
+      return res;
+    } catch (e) {
+      state = state.copyWith(
+        isActionLoading: false,
+        error: 'Failed to initiate WhatsApp delivery: ${e.toString()}',
+      );
+      return null;
+    }
+  }
+
+  Future<bool> markDelivered({String? note}) async {
+    state = state.copyWith(isActionLoading: true, error: null);
+    try {
+      final updated = await _repository.markDelivered(_bookingId, note: note);
+      state = state.copyWith(
+        booking: AsyncValue.data(updated),
+        isActionLoading: false,
+        successMessage: 'Reel delivery confirmed! Booking marked as delivered.',
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isActionLoading: false,
+        error: 'Failed to mark delivered: ${e.toString()}',
+      );
+      return false;
+    }
+  }
 }

@@ -7,6 +7,7 @@ import 'package:instant_reel/features/creator/domain/models/creator_booking_stat
 import 'package:instant_reel/features/creator/presentation/controllers/creator_workflow_controller.dart';
 import 'package:instant_reel/features/creator/presentation/widgets/deliver_reel_dialog.dart';
 import 'package:instant_reel/features/creator/presentation/widgets/editing_countdown_timer.dart';
+import 'package:instant_reel/features/creator/presentation/widgets/whatsapp_delivery_card.dart';
 import 'package:instant_reel/features/customer/domain/models/booking_model.dart';
 import 'package:instant_reel/features/payment/presentation/widgets/creator_cod_collection_card.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -284,6 +285,19 @@ class CreatorBookingWorkflowView extends ConsumerWidget {
         ),
         const SizedBox(height: 20),
 
+        // WhatsApp Peer-to-Peer Delivery Card
+        if (workflow == CreatorWorkflowStatus.editingCompleted ||
+            workflow == CreatorWorkflowStatus.delivered ||
+            workflow == CreatorWorkflowStatus.completed ||
+            booking.isDelivered) ...[
+          WhatsAppDeliveryCard(
+            booking: booking,
+            controller: controller,
+            isActionLoading: state.isActionLoading,
+          ),
+          const SizedBox(height: 20),
+        ],
+
         // Active Action Card
         Container(
           padding: const EdgeInsets.all(20),
@@ -360,34 +374,60 @@ class CreatorBookingWorkflowView extends ConsumerWidget {
                   ],
                 )
               else if (workflow == CreatorWorkflowStatus.editingCompleted)
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
-                        builder: (ctx) => DeliverReelDialog(
-                          bookingCode: booking.bookingCode,
-                          customerName: booking.customerName ?? 'Customer',
-                          customerWhatsapp: booking.customerWhatsapp,
-                          onDeliver: (url, note) => controller.deliverReel(url, note: note),
+                Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton.icon(
+                        onPressed: state.isActionLoading
+                            ? null
+                            : () async {
+                                final res = await controller.sendReelOnWhatsApp();
+                                if (res != null && res['whatsapp_url'] != null) {
+                                  final uri = Uri.parse(res['whatsapp_url'] as String);
+                                  if (await canLaunchUrl(uri)) {
+                                    await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                  }
+                                }
+                              },
+                        icon: const Icon(Icons.send_rounded, size: 20),
+                        label: const Text(
+                          '1. Send Reel via WhatsApp',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
                         ),
-                      );
-                    },
-                    icon: const Icon(Icons.send_rounded, size: 20),
-                    label: const Text(
-                      'Deliver Reel to WhatsApp',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF25D366),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.success,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
+                      child: ElevatedButton.icon(
+                        onPressed: state.isActionLoading
+                            ? null
+                            : () async {
+                                await controller.markDelivered(
+                                  note: 'Vertical 4K reel delivered directly to customer via WhatsApp.',
+                                );
+                              },
+                        icon: const Icon(Icons.check_circle_rounded, size: 20),
+                        label: const Text(
+                          '2. Mark Booking Delivered',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.success,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 )
               else if (workflow == CreatorWorkflowStatus.delivered || workflow == CreatorWorkflowStatus.completed)
                 Column(

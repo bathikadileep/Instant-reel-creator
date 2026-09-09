@@ -99,9 +99,9 @@ class BookingRepository(BaseRepository[Booking]):
         if not booking:
             return None
 
-        booking.status = new_status
-        if new_status == BookingStatus.DELIVERED_ON_WHATSAPP:
+        if new_status in (BookingStatus.DELIVERED, BookingStatus.DELIVERED_ON_WHATSAPP):
             booking.delivered_at = datetime.now(timezone.utc)
+            booking.delivery_status = "delivered"
             if reel_url:
                 booking.reel_url = reel_url
 
@@ -383,6 +383,7 @@ class BookingRepository(BaseRepository[Booking]):
         booking.status = new_status
         if new_status in (BookingStatus.DELIVERED, BookingStatus.DELIVERED_ON_WHATSAPP):
             booking.delivered_at = datetime.now(timezone.utc)
+            booking.delivery_status = "delivered"
             if reel_url:
                 booking.reel_url = reel_url
 

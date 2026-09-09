@@ -347,6 +347,13 @@ class Booking(TimeStampedUUIDBase):
         DateTime(timezone=True),
         nullable=True,
     )
+    delivery_status: Mapped[str] = mapped_column(
+        String(50),
+        default="pending",
+        nullable=False,
+        index=True,
+        comment="pending, shared_on_whatsapp, delivered",
+    )
     # Payment and Cash on Delivery fields
     payment_method: Mapped[Optional[PaymentMethod]] = mapped_column(
         Enum(PaymentMethod, native_enum=False, length=50, values_callable=lambda x: [e.value for e in x]),
