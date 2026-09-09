@@ -1,6 +1,9 @@
 version: '3.8'
 
 services:
+  # ----------------------------------------------------------------------------
+  # Instant Reel Backend API (FastAPI)
+  # ----------------------------------------------------------------------------
   backend:
     build:
       context: ./backend
@@ -10,18 +13,61 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - ENVIRONMENT=development
-      - DEBUG=True
-      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/instant_reel
-      - SYNC_DATABASE_URL=postgresql://postgres:postgres@db:5432/instant_reel
-      - JWT_SECRET_KEY=local_dev_secret_key_change_in_production
-    volumes:
-      - ./backend:/app
+      - ENVIRONMENT=production
+      - DEBUG=False
+      - HOST=0.0.0.0
+      - PORT=8000
+      - API_V1_STR=/api/v1
+      # Default fallback connects to local db service. Overridden by .env for Neon DB:
+      - DATABASE_URL=${DATABASE_URL:-postgresql+asyncpg://postgres:postgres@db:5432/instant_reel}
+      - SYNC_DATABASE_URL=${SYNC_DATABASE_URL:-postgresql://postgres:postgres@db:5432/instant_reel}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-instant_reel_super_secure_production_secret_key_12345}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_FORMAT=${LOG_FORMAT:-json}
+      - PROMETHEUS_METRICS_ENABLED=True
+      - SENTRY_DSN=${SENTRY_DSN:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-http://localhost:3000,http://localhost:8000,https://instant-reel-admin.onrender.com,*}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/api/v1/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - instant_reel_net
 
-  # Optional local PostgreSQL database for offline development (Neon can be used directly instead)
+  # ----------------------------------------------------------------------------
+  # Instant Reel Admin Panel (React + Vite + Nginx)
+  # ----------------------------------------------------------------------------
+  admin:
+    build:
+      context: ./admin-panel
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:8000/api/v1}
+    container_name: instant_reel_admin
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O - http://localhost/healthz || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+    depends_on:
+      - backend
+    networks:
+      - instant_reel_net
+
+  # ----------------------------------------------------------------------------
+  # Local PostgreSQL Database (Offline development / local testing fallback)
+  # When using Neon Serverless Postgres, this service can be kept idle or stopped.
+  # ----------------------------------------------------------------------------
   db:
     image: postgres:16-alpine
     container_name: instant_reel_db
@@ -39,6 +85,30 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - instant_reel_net
+
+  # ----------------------------------------------------------------------------
+  # Prometheus Server (Optional Monitoring Profile)
+  # Run with: docker compose --profile monitoring up
+  # ----------------------------------------------------------------------------
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: instant_reel_prometheus
+    restart: unless-stopped
+    profiles: ["monitoring"]
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - instant_reel_net
 
 volumes:
   postgres_data:
+  prometheus_data:
+
+networks:
+  instant_reel_net:
+    driver: bridge
