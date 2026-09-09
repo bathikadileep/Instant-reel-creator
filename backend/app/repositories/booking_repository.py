@@ -3,8 +3,8 @@ import secrets
 import uuid
 from datetime import datetime, time, timezone
 from decimal import Decimal
-from typing import List, Optional
-from sqlalchemy import desc, func, select
+from typing import List, Optional, Tuple
+from sqlalchemy import desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -15,6 +15,7 @@ from app.models.schema_models import (
     CreatorProfile,
     Package,
     Review,
+    User,
 )
 from app.repositories.base import BaseRepository
 
@@ -396,4 +397,145 @@ class BookingRepository(BaseRepository[Booking]):
         await self.db.commit()
         await self.db.refresh(booking)
         return booking
+
+    async def search_bookings(
+        self,
+        customer_id: Optional[uuid.UUID] = None,
+        creator_id: Optional[uuid.UUID] = None,
+        city: Optional[str] = None,
+        status: Optional[BookingStatus] = None,
+        search_query: Optional[str] = None,
+        date_from: Optional[datetime] = None,
+        date_to: Optional[datetime] = None,
+        skip: int = 0,
+        limit: int = 20,
+    ) -> Tuple[List[Booking], int]:
+        """Comprehensive search and filter for bookings management."""
+        query = (
+            select(Booking)
+            .options(
+                selectinload(Booking.package),
+                selectinload(Booking.customer),
+                selectinload(Booking.creator),
+                selectinload(Booking.status_history),
+            )
+            .where(Booking.is_deleted == False)  # noqa: E712
+        )
+
+        count_query = select(func.count(Booking.id)).where(Booking.is_deleted == False)  # noqa: E712
+
+        if customer_id:
+            query = query.where(Booking.customer_id == customer_id)
+            count_query = count_query.where(Booking.customer_id == customer_id)
+
+        if creator_id:
+            query = query.where(Booking.creator_id == creator_id)
+            count_query = count_query.where(Booking.creator_id == creator_id)
+
+        if city:
+            query = query.where(func.lower(Booking.city) == city.strip().lower())
+            count_query = count_query.where(func.lower(Booking.city) == city.strip().lower())
+
+        if status:
+            query = query.where(Booking.status == status)
+            count_query = count_query.where(Booking.status == status)
+
+        if date_from:
+            query = query.where(Booking.scheduled_at >= date_from)
+            count_query = count_query.where(Booking.scheduled_at >= date_from)
+
+        if date_to:
+            query = query.where(Booking.scheduled_at <= date_to)
+            count_query = count_query.where(Booking.scheduled_at <= date_to)
+
+        if search_query:
+            term = f"%{search_query.strip()}%"
+            search_filter = or_(
+                Booking.booking_code.ilike(term),
+                Booking.location_address.ilike(term),
+                Booking.city.ilike(term),
+                Booking.notes.ilike(term),
+            )
+            query = query.where(search_filter)
+            count_query = count_query.where(search_filter)
+
+        total_res = await self.db.execute(count_query)
+        total = total_res.scalar() or 0
+
+        query = query.order_by(desc(Booking.created_at)).offset(skip).limit(limit)
+        result = await self.db.execute(query)
+        bookings = list(result.scalars().all())
+
+        return bookings, total
+
+    async def assign_creator(
+        self,
+        booking_id: uuid.UUID,
+        creator_id: uuid.UUID,
+        assigned_by_id: uuid.UUID,
+        note: Optional[str] = None,
+    ) -> Optional[Booking]:
+        """Assign creator to booking and log audit history."""
+        booking = await self.get_by_id_with_details(booking_id)
+        if not booking:
+            return None
+
+        booking.creator_id = creator_id
+        booking.status = BookingStatus.ASSIGNED
+
+        audit_note = note or "Creator assigned to booking"
+        history = BookingStatusHistory(
+            booking_id=booking.id,
+            status=BookingStatus.ASSIGNED,
+            note=audit_note,
+            changed_by_user_id=assigned_by_id,
+        )
+        self.db.add(history)
+        await self.db.commit()
+        await self.db.refresh(booking)
+        return booking
+
+    async def cancel_booking(
+        self,
+        booking_id: uuid.UUID,
+        cancelled_by_id: uuid.UUID,
+        reason: str,
+        note: Optional[str] = None,
+    ) -> Optional[Booking]:
+        """Cancel booking with audit reason and attribution."""
+        booking = await self.get_by_id_with_details(booking_id)
+        if not booking:
+            return None
+
+        booking.status = BookingStatus.CANCELLED
+
+        combined_note = f"Reason: {reason}. {note or ''}".strip()
+        history = BookingStatusHistory(
+            booking_id=booking.id,
+            status=BookingStatus.CANCELLED,
+            note=combined_note,
+            changed_by_user_id=cancelled_by_id,
+        )
+        self.db.add(history)
+        await self.db.commit()
+        await self.db.refresh(booking)
+        return booking
+
+    async def get_status_timeline(
+        self,
+        booking_id: uuid.UUID,
+    ) -> List[BookingStatusHistory]:
+        """Fetch complete chronological audit status transitions."""
+        query = (
+            select(BookingStatusHistory)
+            .options(selectinload(BookingStatusHistory.changed_by))
+            .where(
+                BookingStatusHistory.booking_id == booking_id,
+                BookingStatusHistory.is_deleted == False,  # noqa: E712
+            )
+            .order_by(BookingStatusHistory.created_at.asc())
+        )
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
+
 
