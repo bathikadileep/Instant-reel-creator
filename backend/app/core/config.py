@@ -79,12 +79,33 @@ class Settings(BaseSettings):
     FIREBASE_SERVICE_ACCOUNT_JSON: Optional[str] = None
     FCM_ENABLED: bool = True
 
+    # Logging & Monitoring
+    LOG_LEVEL: str = "INFO"
+    LOG_FORMAT: str = "text"  # "json" for cloud production, "text" for local dev
+    PROMETHEUS_METRICS_ENABLED: bool = True
+
+    # Sentry Error Tracking & Performance Monitoring
+    SENTRY_DSN: Optional[str] = None
+    SENTRY_ENVIRONMENT: Optional[str] = None
+    SENTRY_TRACES_SAMPLE_RATE: float = 0.2
+    SENTRY_PROFILES_SAMPLE_RATE: float = 0.1
+
+    # Render Cloud Metadata (automatically injected by Render)
+    RENDER_EXTERNAL_HOSTNAME: Optional[str] = None
+    RENDER_SERVICE_ID: Optional[str] = None
+    RENDER_GIT_COMMIT: Optional[str] = None
+
+    # Security & Frontend URLs
+    SECURITY_HEADERS_ENABLED: bool = True
+    ADMIN_PANEL_URL: Optional[str] = None
+
     # CORS Settings
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
         "http://localhost:8080",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
+        "https://instant-reel-admin.onrender.com",
         "*",
     ]
 
