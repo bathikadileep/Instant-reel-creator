@@ -30,6 +30,10 @@ export const TopHeader: React.FC<TopHeaderProps> = ({
       title: 'Customer Directory',
       subtitle: 'View customer accounts, booking history, and active status',
     },
+    payments: {
+      title: 'Payments, Razorpay & COD Settlement',
+      subtitle: 'Monitor online transactions, verify advance payments, manage COD config and cash audits',
+    },
     reports: {
       title: 'Financial & Revenue Analytics',
       subtitle: 'Platform gross revenue, 80% creator payouts, 20% commission, and city breakdown',

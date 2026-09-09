@@ -5,12 +5,13 @@ import {
   Camera,
   Users,
   BarChart3,
+  CreditCard,
   LogOut,
   Database,
 } from 'lucide-react';
 import { useAuth } from '../../features/auth/AuthContext';
 
-export type NavTab = 'dashboard' | 'bookings' | 'creators' | 'customers' | 'reports';
+export type NavTab = 'dashboard' | 'bookings' | 'creators' | 'customers' | 'payments' | 'reports';
 
 interface SidebarProps {
   activeTab: NavTab;
@@ -49,6 +50,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
       id: 'customers' as NavTab,
       label: 'Customers',
       icon: <Users className="w-5 h-5" />,
+    },
+    {
+      id: 'payments' as NavTab,
+      label: 'Payments & COD',
+      icon: <CreditCard className="w-5 h-5" />,
     },
     {
       id: 'reports' as NavTab,

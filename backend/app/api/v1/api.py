@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import admin, auth, bookings, creator, health, packages
+from app.api.v1.endpoints import admin, auth, bookings, creator, health, packages, payments
 
 api_router = APIRouter()
 
@@ -20,4 +20,7 @@ api_router.include_router(creator.router, prefix="/creator", tags=["Creator"])
 
 # Admin Console & Operations
 api_router.include_router(admin.router, prefix="/admin", tags=["Admin"])
+
+# Payment Gateway & Cash on Delivery
+api_router.include_router(payments.router, prefix="/payments", tags=["Payments"])
 

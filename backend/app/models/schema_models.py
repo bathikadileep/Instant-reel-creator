@@ -53,8 +53,15 @@ class BookingStatus(str, enum.Enum):
     DELIVERED_ON_WHATSAPP = "delivered_on_whatsapp"
 
 
+class PaymentMethod(str, enum.Enum):
+    RAZORPAY_FULL = "razorpay_full"
+    COD_WITH_ADVANCE = "cod_with_advance"
+
+
 class PaymentStatus(str, enum.Enum):
     PENDING = "pending"
+    ADVANCE_PAID = "advance_paid"
+    PAID = "paid"
     COMPLETED = "completed"
     FAILED = "failed"
     REFUNDED = "refunded"
@@ -267,7 +274,7 @@ class Package(TimeStampedUUIDBase):
     bookings: Mapped[List["Booking"]] = relationship("Booking", back_populates="package")
 
     def __repr__(self) -> str:
-        return f"<Package {self.name} - ₹{self.price}>"
+        return f"<Package {self.name} - Rs.{self.price}>"
 
 
 # ==============================================================================
@@ -337,6 +344,44 @@ class Booking(TimeStampedUUIDBase):
         comment="Storage URL / WhatsApp media handle of the delivered reel",
     )
     delivered_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    # Payment and Cash on Delivery fields
+    payment_method: Mapped[Optional[PaymentMethod]] = mapped_column(
+        Enum(PaymentMethod, native_enum=False, length=50, values_callable=lambda x: [e.value for e in x]),
+        nullable=True,
+        index=True,
+    )
+    total_amount: Mapped[Optional[Decimal]] = mapped_column(
+        Numeric(10, 2),
+        nullable=True,
+        comment="Calculated server-side from package price",
+    )
+    advance_amount: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2),
+        default=Decimal("0.00"),
+        nullable=False,
+        comment="Amount paid online via Razorpay (full or advance)",
+    )
+    remaining_amount: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2),
+        default=Decimal("0.00"),
+        nullable=False,
+        comment="Remaining balance to collect in cash on delivery",
+    )
+    payment_status: Mapped[PaymentStatus] = mapped_column(
+        Enum(PaymentStatus, name="payment_status", create_type=False, values_callable=lambda x: [e.value for e in x]),
+        default=PaymentStatus.PENDING,
+        index=True,
+        nullable=False,
+    )
+    cash_collected: Mapped[bool] = mapped_column(
+        Boolean,
+        default=False,
+        nullable=False,
+    )
+    cash_collected_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
     )
@@ -438,6 +483,11 @@ class Payment(TimeStampedUUIDBase):
     )
     amount: Mapped[Decimal] = mapped_column(Numeric(10, 2), nullable=False)
     currency: Mapped[str] = mapped_column(String(3), default="INR", nullable=False)
+    payment_method: Mapped[Optional[PaymentMethod]] = mapped_column(
+        Enum(PaymentMethod, native_enum=False, length=50, values_callable=lambda x: [e.value for e in x]),
+        default=PaymentMethod.RAZORPAY_FULL,
+        nullable=True,
+    )
     status: Mapped[PaymentStatus] = mapped_column(
         Enum(PaymentStatus, name="payment_status", create_type=False, values_callable=lambda x: [e.value for e in x]),
         default=PaymentStatus.PENDING,
@@ -456,6 +506,25 @@ class Payment(TimeStampedUUIDBase):
         index=True,
         nullable=True,
     )
+    razorpay_order_id: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        index=True,
+        nullable=True,
+    )
+    razorpay_payment_id: Mapped[Optional[str]] = mapped_column(
+        String(255),
+        unique=True,
+        index=True,
+        nullable=True,
+    )
+    razorpay_signature: Mapped[Optional[str]] = mapped_column(
+        String(500),
+        nullable=True,
+    )
+    failure_reason: Mapped[Optional[str]] = mapped_column(
+        Text,
+        nullable=True,
+    )
     paid_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True),
         nullable=True,
@@ -467,10 +536,12 @@ class Payment(TimeStampedUUIDBase):
 
     __table_args__ = (
         Index("ix_payments_booking_status", "booking_id", "status"),
+        Index("ix_payments_razorpay_order_id", "razorpay_order_id"),
+        Index("ix_payments_razorpay_payment_id", "razorpay_payment_id"),
     )
 
     def __repr__(self) -> str:
-        return f"<Payment ₹{self.amount} [{self.status}] txn={self.transaction_id}>"
+        return f"<Payment Rs.{self.amount} [{self.status}] txn={self.transaction_id}>"
 
 
 # ==============================================================================
@@ -638,3 +709,26 @@ class RefreshToken(TimeStampedUUIDBase):
     def is_valid(self) -> bool:
         now = datetime.now(timezone.utc)
         return not self.is_revoked and self.expires_at > now
+
+
+# ==============================================================================
+# 9. Payment Configuration Model (COD Settings)
+# ==============================================================================
+
+class PaymentConfig(TimeStampedUUIDBase):
+    """
+    Global payment & Cash On Delivery configuration.
+    """
+    __tablename__ = "payment_configs"
+
+    cod_enabled: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    cod_minimum_advance: Mapped[Decimal] = mapped_column(
+        Numeric(10, 2),
+        default=Decimal("100.00"),
+        nullable=False,
+        comment="Mandatory online advance required for COD bookings",
+    )
+
+    def __repr__(self) -> str:
+        return f"<PaymentConfig cod_enabled={self.cod_enabled} min_advance=Rs.{self.cod_minimum_advance}>"
+

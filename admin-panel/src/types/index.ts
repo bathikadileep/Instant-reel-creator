@@ -21,6 +21,15 @@ export type BookingStatus =
 
 export type TargetCity = 'Maripeda' | 'Mahabubabad' | 'Khammam' | 'Warangal';
 
+export type PaymentMethod = 'razorpay_full' | 'cod_with_advance';
+
+export type PaymentStatus =
+  | 'pending'
+  | 'advance_paid'
+  | 'paid'
+  | 'failed'
+  | 'refunded';
+
 export interface User {
   id: string;
   name?: string | null;
@@ -72,6 +81,13 @@ export interface Booking {
     mobile: string;
   };
   package?: Package;
+  payment_method?: PaymentMethod | null;
+  total_amount?: number | null;
+  advance_amount?: number;
+  remaining_amount?: number;
+  payment_status?: PaymentStatus;
+  cash_collected?: boolean;
+  cash_collected_at?: string | null;
 }
 
 export interface BookingTimelineItem {
@@ -180,6 +196,53 @@ export interface RevenueReport {
 
 export interface PaginatedBookingsResponse {
   items: Booking[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface PaymentConfig {
+  id?: string;
+  cod_enabled: boolean;
+  cod_minimum_advance: number;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface PaymentRecord {
+  id: string;
+  booking_id: string;
+  booking_code?: string;
+  customer_id: string;
+  customer_name?: string;
+  customer_mobile?: string;
+  amount: number;
+  currency: string;
+  payment_method: PaymentMethod;
+  status: PaymentStatus;
+  provider: string;
+  transaction_id?: string | null;
+  razorpay_order_id?: string | null;
+  razorpay_payment_id?: string | null;
+  failure_reason?: string | null;
+  paid_at?: string | null;
+  created_at: string;
+}
+
+export interface PaymentSummary {
+  total_revenue: number;
+  online_revenue: number;
+  cod_advance_revenue: number;
+  cash_collected: number;
+  cod_outstanding: number;
+  successful_payments: number;
+  failed_payments: number;
+  refunded_payments: number;
+}
+
+export interface PaginatedPaymentsResponse {
+  items: PaymentRecord[];
   total: number;
   page: number;
   page_size: number;
