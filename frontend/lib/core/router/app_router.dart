@@ -9,6 +9,8 @@ import 'package:instant_reel/features/auth/presentation/views/login_screen.dart'
 import 'package:instant_reel/features/auth/presentation/views/otp_screen.dart';
 import 'package:instant_reel/features/auth/presentation/views/role_selection_screen.dart';
 import 'package:instant_reel/features/auth/presentation/views/splash_screen.dart';
+import 'package:instant_reel/features/booking_management/presentation/views/booking_details_screen.dart';
+import 'package:instant_reel/features/booking_management/presentation/views/booking_history_screen.dart';
 import 'package:instant_reel/features/creator/presentation/views/creator_booking_workflow_view.dart';
 import 'package:instant_reel/features/creator/presentation/views/creator_dashboard_view.dart';
 import 'package:instant_reel/features/customer/domain/models/booking_model.dart';
@@ -89,8 +91,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         name: RouteNames.bookingDetail,
         builder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return BookingDetailView(bookingId: id);
+          return BookingDetailsScreen(bookingId: id);
         },
+      ),
+      GoRoute(
+        path: RoutePaths.bookingHistory,
+        name: RouteNames.bookingHistory,
+        builder: (context, state) => const BookingHistoryScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
