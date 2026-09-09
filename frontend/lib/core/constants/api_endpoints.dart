@@ -16,6 +16,14 @@ class ApiEndpoints {
   static const String me = '/auth/me';
   static const String selectRole = '/auth/select_role';
 
+  // Payment & COD Endpoints
+  static const String paymentConfig = '/payments/config';
+  static const String createPaymentOrder = '/payments/create-order';
+  static const String verifyPayment = '/payments/verify';
+  static const String collectCash = '/payments/collect-cash';
+  static const String paymentSummary = '/payments/admin/summary';
+  static const String allPayments = '/payments/admin/all';
+
   // Timeouts
   static const Duration connectTimeout = Duration(seconds: 15);
   static const Duration receiveTimeout = Duration(seconds: 15);

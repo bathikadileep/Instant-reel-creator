@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:instant_reel/core/theme/app_colors.dart';
 import 'package:instant_reel/features/customer/domain/models/package_model.dart';
 
@@ -184,6 +185,15 @@ class BookingModel extends Equatable {
   final Map<String, dynamic>? creator;
   final List<BookingStatusHistoryModel> statusHistory;
 
+  // Payment and COD fields
+  final String? paymentMethod;
+  final double? totalAmount;
+  final double advanceAmount;
+  final double remainingAmount;
+  final String paymentStatus;
+  final bool cashCollected;
+  final DateTime? cashCollectedAt;
+
   const BookingModel({
     required this.id,
     required this.bookingCode,
@@ -202,7 +212,27 @@ class BookingModel extends Equatable {
     this.package,
     this.creator,
     this.statusHistory = const [],
+    this.paymentMethod,
+    this.totalAmount,
+    this.advanceAmount = 0.0,
+    this.remainingAmount = 0.0,
+    this.paymentStatus = 'pending',
+    this.cashCollected = false,
+    this.cashCollectedAt,
   });
+
+  // Getters for display
+  String get packageName => package?.name ?? '10-Minute Rapid Reel';
+  double get price => totalAmount ?? package?.price ?? 499.0;
+  String get formattedSchedule => DateFormat('EEE, d MMM yyyy • h:mm a').format(scheduledAt);
+
+  // Payment status helpers
+  bool get isCod => paymentMethod == 'cod_with_advance';
+  bool get isAdvancePaid => paymentStatus.toLowerCase() == 'advance_paid';
+  bool get isPaidInFull =>
+      paymentStatus.toLowerCase() == 'paid' ||
+      (remainingAmount <= 0.0 && paymentStatus.toLowerCase() != 'pending' && paymentStatus.toLowerCase() != 'failed');
+  bool get hasOutstandingCash => isCod && !cashCollected && remainingAmount > 0.0;
 
   factory BookingModel.fromJson(Map<String, dynamic> json) {
     return BookingModel(
@@ -235,6 +265,21 @@ class BookingModel extends Equatable {
                   BookingStatusHistoryModel.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
+      paymentMethod: json['payment_method'] as String?,
+      totalAmount: json['total_amount'] != null
+          ? (json['total_amount'] as num).toDouble()
+          : null,
+      advanceAmount: json['advance_amount'] != null
+          ? (json['advance_amount'] as num).toDouble()
+          : 0.0,
+      remainingAmount: json['remaining_amount'] != null
+          ? (json['remaining_amount'] as num).toDouble()
+          : 0.0,
+      paymentStatus: json['payment_status'] as String? ?? 'pending',
+      cashCollected: json['cash_collected'] as bool? ?? false,
+      cashCollectedAt: json['cash_collected_at'] != null
+          ? DateTime.parse(json['cash_collected_at'] as String)
+          : null,
     );
   }
 
@@ -257,5 +302,12 @@ class BookingModel extends Equatable {
         package,
         creator,
         statusHistory,
+        paymentMethod,
+        totalAmount,
+        advanceAmount,
+        remainingAmount,
+        paymentStatus,
+        cashCollected,
+        cashCollectedAt,
       ];
 }

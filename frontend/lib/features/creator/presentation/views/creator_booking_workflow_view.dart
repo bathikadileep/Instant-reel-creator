@@ -8,6 +8,7 @@ import 'package:instant_reel/features/creator/presentation/controllers/creator_w
 import 'package:instant_reel/features/creator/presentation/widgets/deliver_reel_dialog.dart';
 import 'package:instant_reel/features/creator/presentation/widgets/editing_countdown_timer.dart';
 import 'package:instant_reel/features/customer/domain/models/booking_model.dart';
+import 'package:instant_reel/features/payment/presentation/widgets/creator_cod_collection_card.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class CreatorBookingWorkflowView extends ConsumerWidget {
@@ -275,6 +276,13 @@ class CreatorBookingWorkflowView extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
         ],
+
+        // Cash on Delivery Settlement Card
+        CreatorCodCollectionCard(
+          booking: booking,
+          onCashCollected: () => controller.loadBooking(),
+        ),
+        const SizedBox(height: 20),
 
         // Active Action Card
         Container(

@@ -250,6 +250,115 @@ class BookingDetailsScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
 
+        // Payment Details & COD Breakdown Card
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceDark,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppColors.cardDark),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.payment_rounded, color: AppColors.secondary, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Payment & Settlement',
+                        style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.white),
+                      ),
+                    ],
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: (booking.isPaidInFull
+                              ? AppColors.success
+                              : (booking.isAdvancePaid ? AppColors.warning : AppColors.error))
+                          .withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: (booking.isPaidInFull
+                                ? AppColors.success
+                                : (booking.isAdvancePaid ? AppColors.warning : AppColors.error))
+                            .withOpacity(0.5),
+                      ),
+                    ),
+                    child: Text(
+                      booking.paymentStatus.toUpperCase().replaceAll('_', ' '),
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: booking.isPaidInFull
+                            ? AppColors.success
+                            : (booking.isAdvancePaid ? AppColors.warning : AppColors.error),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Payment Method', style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 13)),
+                  Text(
+                    booking.isCod ? 'Cash on Delivery (Advance)' : 'Razorpay Full Payment',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Total Package Price', style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 13)),
+                  Text(
+                    '₹${booking.price.toStringAsFixed(2)}',
+                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 13),
+                  ),
+                ],
+              ),
+              if (booking.isCod) ...[
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Online Advance Paid', style: TextStyle(color: AppColors.warning, fontSize: 13)),
+                    Text(
+                      '₹${booking.advanceAmount.toStringAsFixed(2)}',
+                      style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.bold, fontSize: 13),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Cash on Delivery Balance', style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 13)),
+                    Text(
+                      booking.cashCollected
+                          ? '₹0.00 (Collected On-Site)'
+                          : '₹${booking.remainingAmount.toStringAsFixed(2)} (Pending On-Site)',
+                      style: TextStyle(
+                        color: booking.cashCollected ? AppColors.success : Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
         // Videographer Assignment Card
         Container(
           padding: const EdgeInsets.all(20),

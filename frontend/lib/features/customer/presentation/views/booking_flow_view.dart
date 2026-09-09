@@ -12,6 +12,10 @@ import 'package:instant_reel/features/customer/domain/models/event_type.dart';
 import 'package:instant_reel/features/customer/domain/models/package_model.dart';
 import 'package:instant_reel/features/customer/presentation/controllers/booking_flow_controller.dart';
 import 'package:instant_reel/features/customer/presentation/widgets/step_indicator.dart';
+import 'package:instant_reel/features/payment/domain/models/payment_models.dart';
+import 'package:instant_reel/features/payment/presentation/controllers/payment_controller.dart';
+import 'package:instant_reel/features/payment/presentation/widgets/payment_method_selector.dart';
+import 'package:instant_reel/features/payment/presentation/widgets/razorpay_checkout_dialog.dart';
 
 class BookingFlowView extends ConsumerStatefulWidget {
   const BookingFlowView({Key? key}) : super(key: key);
@@ -51,10 +55,27 @@ class _BookingFlowViewState extends ConsumerState<BookingFlowView> {
     if (success && mounted) {
       final booking = ref.read(bookingFlowControllerProvider).createdBooking;
       if (booking != null) {
-        context.pushReplacement(
-          '${RoutePaths.bookingSuccess}/${booking.id}',
-          extra: booking,
+        // Create payment order (Full or COD Advance based on user selection)
+        final paymentNotifier = ref.read(paymentControllerProvider.notifier);
+        final order = await paymentNotifier.initiatePaymentOrder(
+          bookingId: booking.id,
         );
+
+        if (order != null && mounted) {
+          // Open interactive Razorpay checkout sheet with HMAC verification
+          final verified = await RazorpayCheckoutDialog.show(context, order);
+          if (verified == true && mounted) {
+            context.pushReplacement(
+              '${RoutePaths.bookingSuccess}/${booking.id}',
+              extra: booking,
+            );
+          }
+        } else if (mounted) {
+          final err = ref.read(paymentControllerProvider).errorMessage ?? 'Payment initialization failed.';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(err), backgroundColor: AppColors.error),
+          );
+        }
       }
     }
   }
@@ -688,6 +709,11 @@ class _BookingFlowViewState extends ConsumerState<BookingFlowView> {
         ? DateFormat('EEE, d MMM yyyy').format(state.scheduledDate!)
         : '';
     final pkgPrice = state.selectedPackage?.price ?? 0.0;
+    final paymentState = ref.watch(paymentControllerProvider);
+    final isCod = paymentState.selectedMethod == PaymentMethodType.codWithAdvance;
+    final minAdvance = paymentState.config.codMinimumAdvance;
+    final remainingCash = (pkgPrice - minAdvance).clamp(0.0, pkgPrice);
+    final dueNow = isCod ? minAdvance : pkgPrice;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -701,7 +727,7 @@ class _BookingFlowViewState extends ConsumerState<BookingFlowView> {
         ),
         const SizedBox(height: 6),
         const Text(
-          'Review details before dispatching your on-demand creator request.',
+          'Review details and choose payment method to dispatch your creator.',
           style: TextStyle(color: AppColors.textSecondaryDark, fontSize: 14),
         ),
         const SizedBox(height: 20),
@@ -774,6 +800,17 @@ class _BookingFlowViewState extends ConsumerState<BookingFlowView> {
         ),
         const SizedBox(height: 24),
 
+        // Payment Method Selector
+        PaymentMethodSelector(
+          selectedMethod: paymentState.selectedMethod,
+          onMethodSelected: (method) {
+            ref.read(paymentControllerProvider.notifier).selectPaymentMethod(method);
+          },
+          totalAmount: pkgPrice,
+          config: paymentState.config,
+        ),
+        const SizedBox(height: 24),
+
         // Pricing Breakdown Card
         Container(
           padding: const EdgeInsets.all(20),
@@ -799,13 +836,48 @@ class _BookingFlowViewState extends ConsumerState<BookingFlowView> {
                   Text('FREE', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold)),
                 ],
               ),
+              if (isCod) ...[
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Mandatory Online Advance (Due Now)',
+                        style: TextStyle(color: AppColors.warning, fontWeight: FontWeight.w600)),
+                    Text('₹${minAdvance.toStringAsFixed(2)}',
+                        style: const TextStyle(color: AppColors.warning, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Cash Due to Videographer on Delivery',
+                        style: TextStyle(color: Colors.white70)),
+                    Text('₹${remainingCash.toStringAsFixed(2)}',
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                  ],
+                ),
+              ],
               const Divider(color: AppColors.borderDark, height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Total Amount', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        isCod ? 'Pay Online Now' : 'Total Amount Due Now',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Colors.white),
+                      ),
+                      if (isCod)
+                        Text(
+                          'Remaining ₹${remainingCash.toStringAsFixed(0)} cash on-site',
+                          style: const TextStyle(fontSize: 11, color: AppColors.textSecondaryDark),
+                        ),
+                    ],
+                  ),
                   Text(
-                    '₹${pkgPrice.toStringAsFixed(2)}',
+                    '₹${dueNow.toStringAsFixed(2)}',
                     style: const TextStyle(
                       fontWeight: FontWeight.w800,
                       fontSize: 22,
@@ -848,6 +920,10 @@ class _BookingFlowViewState extends ConsumerState<BookingFlowView> {
     BookingFlowController notifier,
   ) {
     final isLastStep = state.currentStep == 5;
+    final paymentState = ref.watch(paymentControllerProvider);
+    final pkgPrice = state.selectedPackage?.price ?? 0.0;
+    final isCod = paymentState.selectedMethod == PaymentMethodType.codWithAdvance;
+    final dueNow = isCod ? paymentState.config.codMinimumAdvance : pkgPrice;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -890,7 +966,9 @@ class _BookingFlowViewState extends ConsumerState<BookingFlowView> {
                       child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                     )
                   : Text(
-                      isLastStep ? 'Confirm & Book Shoot' : 'Continue',
+                      isLastStep
+                          ? 'Pay ₹${dueNow.toStringAsFixed(0)} & Confirm'
+                          : 'Continue',
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
             ),
