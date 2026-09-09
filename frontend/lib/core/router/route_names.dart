@@ -11,6 +11,7 @@ class RouteNames {
   static const String bookingFlow = 'booking-flow';
   static const String bookingSuccess = 'booking-success';
   static const String bookingDetail = 'booking-detail';
+  static const String bookingHistory = 'booking-history';
 
   // Creator Module Route Names
   static const String creatorDashboard = 'creator-dashboard';
@@ -31,6 +32,7 @@ class RoutePaths {
   static const String bookingFlow = '/book-reel';
   static const String bookingSuccess = '/booking-success';
   static const String bookingDetail = '/booking-detail';
+  static const String bookingHistory = '/booking-history';
 
   // Creator Module Route Paths
   static const String creatorDashboard = '/creator-dashboard';

@@ -408,6 +408,7 @@ class BookingStatusHistory(TimeStampedUUIDBase):
 
     # Relationships
     booking: Mapped["Booking"] = relationship("Booking", back_populates="status_history")
+    changed_by: Mapped[Optional["User"]] = relationship("User", foreign_keys=[changed_by_user_id])
 
     def __repr__(self) -> str:
         return f"<StatusHistory booking={self.booking_id} status={self.status}>"
