@@ -69,6 +69,11 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 1 day
 
+    # Razorpay Payment Gateway Settings
+    RAZORPAY_KEY_ID: str = "rzp_test_instantreel_mock"
+    RAZORPAY_KEY_SECRET: str = "instantreel_mock_secret_key_12345"
+    RAZORPAY_WEBHOOK_SECRET: str = "instantreel_webhook_secret_67890"
+
     # CORS Settings
     CORS_ORIGINS: List[str] = [
         "http://localhost:3000",

@@ -63,6 +63,8 @@ def create_application() -> FastAPI:
 
     # Mount API Routers
     app.include_router(api_router, prefix=settings.API_V1_STR)
+    from app.api.v1.endpoints import payments
+    app.include_router(payments.router, prefix="/api/payments", tags=["Payments"])
 
     # Convenience root endpoint
     @app.get("/", tags=["Root"])
