@@ -1,8 +1,12 @@
 class ApiEndpoints {
-  // Base URLs (Switchable for Android Emulator, iOS Simulator, or Production)
-  // For Android Emulator: http://10.0.2.2:8000/api/v1
-  // For iOS/Web/Desktop: http://localhost:8000/api/v1
-  static const String defaultBaseUrl = 'http://localhost:8000/api/v1';
+  // Production Render Backend URL
+  static const String productionBaseUrl = 'https://instant-reel-api.onrender.com/api/v1';
+  // Local Development URLs
+  static const String emulatorBaseUrl = 'http://10.0.2.2:8000/api/v1';
+  static const String localBaseUrl = 'http://localhost:8000/api/v1';
+
+  // Active default Base URL pointing to Live Render Backend
+  static const String defaultBaseUrl = productionBaseUrl;
 
   // System & Health
   static const String health = '/health';
