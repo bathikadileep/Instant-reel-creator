@@ -7,6 +7,7 @@ from app.models.schema_models import (
     BookingStatus,
     BookingStatusHistory,
     CreatorProfile,
+    DeviceToken,
     Notification,
     OTPVerification,
     Package,
@@ -32,6 +33,7 @@ __all__ = [
     "PaymentStatus",
     "Review",
     "Notification",
+    "DeviceToken",
     "OTPVerification",
     "RefreshToken",
 ]

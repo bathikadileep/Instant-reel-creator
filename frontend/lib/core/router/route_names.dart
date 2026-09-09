@@ -17,6 +17,9 @@ class RouteNames {
   static const String creatorDashboard = 'creator-dashboard';
   static const String creatorBooking = 'creator-booking';
   static const String reelDelivery = 'reel-delivery';
+
+  // Notifications
+  static const String notifications = 'notifications';
 }
 
 class RoutePaths {
@@ -38,4 +41,7 @@ class RoutePaths {
   static const String creatorDashboard = '/creator-dashboard';
   static const String creatorBooking = '/creator-booking';
   static const String reelDelivery = '/reel-delivery';
+
+  // Notifications
+  static const String notifications = '/notifications';
 }

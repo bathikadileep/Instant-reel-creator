@@ -138,6 +138,11 @@ class User(TimeStampedUUIDBase):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    device_tokens: Mapped[List["DeviceToken"]] = relationship(
+        "DeviceToken",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
     refresh_tokens: Mapped[List["RefreshToken"]] = relationship(
         "RefreshToken",
         back_populates="user",
@@ -667,6 +672,63 @@ class Notification(TimeStampedUUIDBase):
 
     def __repr__(self) -> str:
         return f"<Notification user={self.user_id} title='{self.title}'>"
+
+
+# ==============================================================================
+# 8b. Device Token Model (FCM Push Notifications)
+# ==============================================================================
+
+class DeviceToken(TimeStampedUUIDBase):
+    """
+    Tracks registered FCM device tokens for customers, creators, and admins.
+    Enables targeted push notifications to active mobile and web clients.
+    """
+    __tablename__ = "device_tokens"
+
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+        nullable=False,
+    )
+    fcm_token: Mapped[str] = mapped_column(
+        String(512),
+        unique=True,
+        index=True,
+        nullable=False,
+    )
+    platform: Mapped[str] = mapped_column(
+        String(50),
+        default="android",
+        nullable=False,
+        comment="android, ios, web",
+    )
+    device_name: Mapped[Optional[str]] = mapped_column(
+        String(100),
+        nullable=True,
+        comment="Device model or browser name",
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean,
+        default=True,
+        index=True,
+        nullable=False,
+    )
+    last_used_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+    # Relationships
+    user: Mapped["User"] = relationship("User", back_populates="device_tokens")
+
+    __table_args__ = (
+        Index("ix_device_tokens_user_active", "user_id", "is_active"),
+    )
+
+    def __repr__(self) -> str:
+        return f"<DeviceToken user={self.user_id} platform={self.platform} active={self.is_active}>"
 
 
 # ==============================================================================

@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Optional, Union
 from pydantic import AnyHttpUrl, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -73,6 +73,11 @@ class Settings(BaseSettings):
     RAZORPAY_KEY_ID: str = "rzp_test_instantreel_mock"
     RAZORPAY_KEY_SECRET: str = "instantreel_mock_secret_key_12345"
     RAZORPAY_WEBHOOK_SECRET: str = "instantreel_webhook_secret_67890"
+
+    # Firebase Cloud Messaging Settings
+    FIREBASE_CREDENTIALS_PATH: Optional[str] = None
+    FIREBASE_SERVICE_ACCOUNT_JSON: Optional[str] = None
+    FCM_ENABLED: bool = True
 
     # CORS Settings
     CORS_ORIGINS: List[str] = [

@@ -18,6 +18,7 @@ import 'package:instant_reel/features/customer/presentation/views/booking_detail
 import 'package:instant_reel/features/customer/presentation/views/booking_flow_view.dart';
 import 'package:instant_reel/features/customer/presentation/views/booking_success_view.dart';
 import 'package:instant_reel/features/customer/presentation/views/customer_dashboard_view.dart';
+import 'package:instant_reel/features/notifications/presentation/views/notifications_view.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -98,6 +99,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: RoutePaths.bookingHistory,
         name: RouteNames.bookingHistory,
         builder: (context, state) => const BookingHistoryScreen(),
+      ),
+      GoRoute(
+        path: RoutePaths.notifications,
+        name: RouteNames.notifications,
+        builder: (context, state) => const NotificationsView(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

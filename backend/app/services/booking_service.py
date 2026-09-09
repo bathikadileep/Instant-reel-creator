@@ -94,18 +94,12 @@ class BookingService:
 
         created = await self.booking_repo.create_booking(booking)
 
-        # 4. Trigger in-app notification
-        notification = Notification(
-            user_id=customer.id,
-            title="Shoot Reserved! 🎬",
-            body=f"Booking {created.booking_code} placed in {created.city}. We are assigning your local videographer.",
-            type="booking_created",
-            data={"booking_id": str(created.id), "code": created.booking_code},
-        )
-        self.db.add(notification)
-        await self.db.commit()
-
         detailed = await self.booking_repo.get_by_id_with_details(created.id)
+
+        # Trigger Customer: Booking Confirmed Push Notification & In-App alert
+        from app.services.fcm_service import FCMService
+        await FCMService.notify_booking_confirmed(self.db, detailed or created)
+
         return detailed or created
 
     async def assign_creator(
@@ -150,26 +144,21 @@ class BookingService:
             note=note,
         )
 
-        # Notifications
-        creator_notif = Notification(
-            user_id=creator_user.id,
-            title="New Shoot Assignment! 📸",
-            body=f"You have been assigned to booking {booking.booking_code} in {booking.city}.",
-            type="booking_assigned",
-            data={"booking_id": str(booking.id), "code": booking.booking_code},
-        )
-        customer_notif = Notification(
-            user_id=booking.customer_id,
-            title="Creator Assigned! 🚀",
-            body=f"{creator_user.name or 'A videographer'} has been assigned to your {booking.city} shoot.",
-            type="creator_assigned",
-            data={"booking_id": str(booking.id), "code": booking.booking_code},
-        )
-        self.db.add(creator_notif)
-        self.db.add(customer_notif)
-        await self.db.commit()
-
         detailed = await self.booking_repo.get_by_id_with_details(updated.id)
+
+        # Dispatch Creator: New Booking & Customer: Creator Assigned push notifications
+        from app.services.fcm_service import FCMService
+        await FCMService.notify_creator_assigned(
+            db=self.db,
+            booking=detailed or updated,
+            creator_name=creator_user.name or "Your Videographer",
+        )
+        await FCMService.notify_new_booking(
+            db=self.db,
+            booking=detailed or updated,
+            creator_id=creator_user.id,
+        )
+
         return detailed or updated
 
     async def cancel_booking(
@@ -232,27 +221,16 @@ class BookingService:
             note=note,
         )
 
-        # Notify participants
-        notif = Notification(
-            user_id=booking.customer_id,
-            title="Booking Cancelled",
-            body=f"Booking {booking.booking_code} was cancelled. Reason: {reason}",
-            type="booking_cancelled",
-            data={"booking_id": str(booking.id)},
-        )
-        self.db.add(notif)
-        if booking.creator_id:
-            c_notif = Notification(
-                user_id=booking.creator_id,
-                title="Booking Cancelled",
-                body=f"Booking {booking.booking_code} was cancelled by {cancelled_by.name or 'client'}.",
-                type="booking_cancelled",
-                data={"booking_id": str(booking.id)},
-            )
-            self.db.add(c_notif)
-        await self.db.commit()
-
         detailed = await self.booking_repo.get_by_id_with_details(updated.id)
+
+        # Dispatch Creator & Customer: Booking Cancelled push notifications
+        from app.services.fcm_service import FCMService
+        await FCMService.notify_booking_cancelled(
+            db=self.db,
+            booking=detailed or updated,
+            reason=reason,
+        )
+
         return detailed or updated
 
     async def get_booking_timeline(
