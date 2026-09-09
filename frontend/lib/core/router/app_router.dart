@@ -2,11 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:instant_reel/core/router/route_names.dart';
+import 'package:instant_reel/features/auth/domain/models/user_model.dart';
+import 'package:instant_reel/features/auth/presentation/controllers/auth_controller.dart';
 import 'package:instant_reel/features/auth/presentation/views/home_screen.dart';
 import 'package:instant_reel/features/auth/presentation/views/login_screen.dart';
 import 'package:instant_reel/features/auth/presentation/views/otp_screen.dart';
 import 'package:instant_reel/features/auth/presentation/views/role_selection_screen.dart';
 import 'package:instant_reel/features/auth/presentation/views/splash_screen.dart';
+import 'package:instant_reel/features/creator/presentation/views/creator_booking_workflow_view.dart';
+import 'package:instant_reel/features/creator/presentation/views/creator_dashboard_view.dart';
 import 'package:instant_reel/features/customer/domain/models/booking_model.dart';
 import 'package:instant_reel/features/customer/presentation/views/booking_detail_view.dart';
 import 'package:instant_reel/features/customer/presentation/views/booking_flow_view.dart';
@@ -41,12 +45,31 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: RoutePaths.home,
         name: RouteNames.home,
-        builder: (context, state) => const CustomerDashboardView(),
+        builder: (context, state) {
+          final user = ref.watch(currentUserProvider);
+          if (user?.role == UserRole.creator) {
+            return const CreatorDashboardView();
+          }
+          return const CustomerDashboardView();
+        },
       ),
       GoRoute(
         path: RoutePaths.customerDashboard,
         name: RouteNames.customerDashboard,
         builder: (context, state) => const CustomerDashboardView(),
+      ),
+      GoRoute(
+        path: RoutePaths.creatorDashboard,
+        name: RouteNames.creatorDashboard,
+        builder: (context, state) => const CreatorDashboardView(),
+      ),
+      GoRoute(
+        path: '${RoutePaths.creatorBooking}/:id',
+        name: RouteNames.creatorBooking,
+        builder: (context, state) {
+          final id = state.pathParameters['id'] ?? '';
+          return CreatorBookingWorkflowView(bookingId: id);
+        },
       ),
       GoRoute(
         path: RoutePaths.bookingFlow,

@@ -23,7 +23,11 @@ class _RoleSelectionScreenState extends ConsumerState<RoleSelectionScreen> {
         .selectRole(_selectedRole);
 
     if (success && mounted) {
-      context.go(RoutePaths.home);
+      if (_selectedRole == UserRole.creator) {
+        context.go(RoutePaths.creatorDashboard);
+      } else {
+        context.go(RoutePaths.customerDashboard);
+      }
     }
   }
 
