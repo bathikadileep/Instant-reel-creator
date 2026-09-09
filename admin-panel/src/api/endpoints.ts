@@ -8,6 +8,10 @@ import type {
   PaginatedBookingsResponse,
   RevenueReport,
   User,
+  PaymentConfig,
+  PaymentRecord,
+  PaymentSummary,
+  PaginatedPaymentsResponse,
 } from '../types';
 
 export interface LoginResponse {
@@ -116,5 +120,40 @@ export const adminApi = {
   getRevenueReport: async (): Promise<RevenueReport> => {
     const res = await apiClient.get('/admin/reports/revenue');
     return res.data;
+  },
+
+  // Payment System & COD Configuration
+  getPaymentConfig: async (): Promise<PaymentConfig> => {
+    const res = await apiClient.get('/payments/config');
+    return res.data?.data || res.data;
+  },
+
+  updatePaymentConfig: async (config: {
+    cod_enabled: boolean;
+    cod_minimum_advance: number;
+  }): Promise<PaymentConfig> => {
+    const res = await apiClient.put('/payments/config', config);
+    return res.data?.data || res.data;
+  },
+
+  getPaymentSummary: async (): Promise<PaymentSummary> => {
+    const res = await apiClient.get('/payments/admin/summary');
+    return res.data?.data || res.data;
+  },
+
+  getPayments: async (params?: {
+    payment_method?: string;
+    status?: string;
+    search?: string;
+    page?: number;
+    page_size?: number;
+  }): Promise<PaginatedPaymentsResponse> => {
+    const res = await apiClient.get('/payments/admin/all', { params });
+    return res.data?.data || res.data;
+  },
+
+  refundPayment: async (paymentId: string, reason: string): Promise<PaymentRecord> => {
+    const res = await apiClient.post(`/payments/${paymentId}/refund`, { reason });
+    return res.data?.data || res.data;
   },
 };

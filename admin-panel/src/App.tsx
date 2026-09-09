@@ -8,6 +8,7 @@ import { DashboardPage } from './features/dashboard/DashboardPage';
 import { BookingsPage } from './features/bookings/BookingsPage';
 import { CreatorsPage } from './features/creators/CreatorsPage';
 import { CustomersPage } from './features/customers/CustomersPage';
+import { PaymentsPage } from './features/payments/PaymentsPage';
 import { RevenueReportsPage } from './features/reports/RevenueReportsPage';
 import { BookingDetailsModal } from './features/bookings/BookingDetailsModal';
 import { AssignCreatorModal } from './features/bookings/AssignCreatorModal';
@@ -73,6 +74,8 @@ const AdminAppContent: React.FC = () => {
       {activeTab === 'creators' && <CreatorsPage />}
 
       {activeTab === 'customers' && <CustomersPage />}
+
+      {activeTab === 'payments' && <PaymentsPage />}
 
       {activeTab === 'reports' && <RevenueReportsPage />}
 
