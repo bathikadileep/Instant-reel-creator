@@ -1,0 +1,37 @@
+name: instant_reel
+description: "Instant Reel - On-demand professional reel creator booking platform serving Maripeda, Mahabubabad, Khammam, and Warangal."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.5.1
+
+  # Navigation & Routing
+  go_router: ^14.0.1
+
+  # Networking & HTTP
+  dio: ^5.4.1
+
+  # UI, Icons & Fonts
+  cupertino_icons: ^1.0.6
+  google_fonts: ^6.2.0
+
+  # Utilities
+  intl: ^0.19.0
+  equatable: ^2.0.5
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

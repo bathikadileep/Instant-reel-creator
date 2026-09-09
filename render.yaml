@@ -1,0 +1,31 @@
+services:
+  # Instant Reel Backend Web Service
+  - type: web
+    name: instant-reel-api
+    runtime: python
+    region: oregon # or frankfurt/singapore depending on your Neon database region
+    plan: free
+    rootDir: backend
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/health
+    autoDeploy: true
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: DEBUG
+        value: "False"
+      - key: API_V1_STR
+        value: /api/v1
+      # Connect your Neon PostgreSQL connection string here:
+      # e.g., postgresql+asyncpg://<user>:<password>@<neon-host>/neondb?ssl=require
+      - key: DATABASE_URL
+        sync: false
+      - key: SYNC_DATABASE_URL
+        sync: false
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "1440"
+      - key: CORS_ORIGINS
+        value: '["*"]'
