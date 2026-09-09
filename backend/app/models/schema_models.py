@@ -32,13 +32,25 @@ class UserRole(str, enum.Enum):
 
 class BookingStatus(str, enum.Enum):
     PENDING = "pending"
+    # Creator Workflow Statuses
+    ASSIGNED = "assigned"
+    ON_THE_WAY = "on_the_way"
+    REACHED = "reached"
+    SHOOTING_STARTED = "shooting_started"
+    SHOOTING_COMPLETED = "shooting_completed"
+    EDITING_STARTED = "editing_started"
+    EDITING_COMPLETED = "editing_completed"
+    DELIVERED = "delivered"
+    REJECTED = "rejected"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+
+    # Legacy Aliases
     CREATOR_ASSIGNED = "creator_assigned"
     ARRIVED_AT_LOCATION = "arrived_at_location"
     SHOOTING_IN_PROGRESS = "shooting_in_progress"
     EDITING = "editing"
     DELIVERED_ON_WHATSAPP = "delivered_on_whatsapp"
-    COMPLETED = "completed"
-    CANCELLED = "cancelled"
 
 
 class PaymentStatus(str, enum.Enum):
