@@ -26,7 +26,7 @@ enum CreatorWorkflowStatus {
   static CreatorWorkflowStatus fromString(dynamic val) {
     if (val == null) return CreatorWorkflowStatus.pending;
     if (val is CreatorWorkflowStatus) return val;
-    final String str;
+    String str;
     if (val is String) {
       str = val;
     } else {
