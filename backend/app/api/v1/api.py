@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import admin, auth, bookings, creator, health, packages, payments
+from app.api.v1.endpoints import admin, auth, bookings, creator, health, notifications, packages, payments
 
 api_router = APIRouter()
 
@@ -23,4 +23,7 @@ api_router.include_router(admin.router, prefix="/admin", tags=["Admin"])
 
 # Payment Gateway & Cash on Delivery
 api_router.include_router(payments.router, prefix="/payments", tags=["Payments"])
+
+# Firebase Cloud Messaging & Notifications
+api_router.include_router(notifications.router, prefix="/notifications", tags=["Notifications"])
 

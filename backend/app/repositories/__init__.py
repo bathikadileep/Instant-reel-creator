@@ -3,6 +3,7 @@
 from app.repositories.base import BaseRepository
 from app.repositories.booking_repository import BookingRepository
 from app.repositories.creator_repository import CreatorRepository
+from app.repositories.device_token_repository import DeviceTokenRepository
 from app.repositories.notification_repository import NotificationRepository
 from app.repositories.package_repository import PackageRepository
 from app.repositories.payment_repository import PaymentRepository
@@ -18,4 +19,5 @@ __all__ = [
     "PaymentRepository",
     "ReviewRepository",
     "NotificationRepository",
+    "DeviceTokenRepository",
 ]

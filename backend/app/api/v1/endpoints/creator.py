@@ -106,6 +106,15 @@ async def accept_booking(
         )
 
     updated = await repo.accept_booking(booking_id=booking.id, creator_user_id=current_user.id)
+
+    # Dispatch Customer: Creator Assigned push notification
+    from app.services.fcm_service import FCMService
+    await FCMService.notify_creator_assigned(
+        db=db,
+        booking=updated,
+        creator_name=current_user.name or "Your Videographer",
+    )
+
     return BookingResponse.model_validate(updated)
 
 
@@ -162,6 +171,16 @@ async def update_booking_status(
         note=request.note,
         reel_url=request.reel_url,
     )
+
+    # Dispatch Customer: Creator Reached alert if videographer arrived on location
+    if request.status in (BookingStatus.ARRIVED_AT_LOCATION, BookingStatus.REACHED):
+        from app.services.fcm_service import FCMService
+        await FCMService.notify_creator_reached(
+            db=db,
+            booking=updated,
+            creator_name=current_user.name or "Your Videographer",
+        )
+
     return BookingResponse.model_validate(updated)
 
 
@@ -272,6 +291,11 @@ async def mark_booking_delivered(
 
     await db.commit()
     refreshed = await repo.get_by_id_with_details(booking.id)
+
+    # Dispatch Customer: Reel Delivered push notification
+    from app.services.fcm_service import FCMService
+    await FCMService.notify_reel_delivered(db=db, booking=refreshed)
+
     return BookingResponse.model_validate(refreshed)
 
 
@@ -315,6 +339,11 @@ async def deliver_booking(
     await creator_repo.increment_reels_delivered(current_user.id)
     await db.commit()
     refreshed = await repo.get_by_id_with_details(booking.id)
+
+    # Dispatch Customer: Reel Delivered push notification
+    from app.services.fcm_service import FCMService
+    await FCMService.notify_reel_delivered(db=db, booking=refreshed)
+
     return BookingResponse.model_validate(refreshed)
 
 
